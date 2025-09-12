@@ -1,0 +1,23 @@
+services:
+  workbench-db:
+    container_name: workbench-db
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5433:5433
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: workbench
+      PGDATA: /data/postgres/workbench
+    volumes:
+      - workbench:/data/postgres/workbench
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d flash_card" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+volumes:
+  workbench:
