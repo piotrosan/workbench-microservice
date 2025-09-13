@@ -19,15 +19,17 @@ class AssociationTaskUser(Base):
     __tablename__ = "association_table_user_task"
 
     task_id: Mapped[int] = mapped_column(
-        ForeignKey("Task.id"),
+        ForeignKey("task.id"),
         primary_key=True
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("User.id"),
+        ForeignKey("workbench_user.id"),
         primary_key=True
     )
     task: Mapped["Task"] = relationship(back_populates="user_association")
     user: Mapped["User"] = relationship(back_populates="task_association")
+    create_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
 
 class Task(Base):
@@ -44,7 +46,7 @@ class Task(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    initiative_id = Column(ForeignKey('Initiative.id'), nullable=False)
+    initiative_id = Column(ForeignKey('initiative.id'), nullable=False)
     initiative: Mapped["Initiative"] = relationship(
         lazy='joined',
         back_populates="tasks"

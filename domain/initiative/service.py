@@ -22,3 +22,8 @@ class InitiativeService:
     ):
         self.ci_db_api.insert_initiative_type(create_initiative_type_request)
 
+
+    def update_initiative(
+            self,
+            update_initiative_request: List[CreateInitiativeRequest]
+    ):

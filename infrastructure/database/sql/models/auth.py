@@ -23,37 +23,48 @@ from sqlalchemy.sql import func
 class AssociationUserGroupUser(Base):
     __tablename__ = "association_user_group_user"
 
-    left_user_id: Mapped[int] = mapped_column(
-        ForeignKey("flash_card_user.id"), primary_key=True
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("workbench_user.id"), primary_key=True
     )
-    right_user_group_id: Mapped[int] = mapped_column(
-        ForeignKey("user_groups.id"), primary_key=True
+    user_group_id: Mapped[int] = mapped_column(
+        ForeignKey("workbench_user_groups.id"), primary_key=True
     )
 
     user: Mapped["User"] = relationship(
         back_populates="asso_user")
     user_group: Mapped["UserGroup"] = relationship(
         back_populates="asso_user_group")
+    create_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
 
-class UserType:
-    __tablename__ = "workbench_user_type"
+class UserProfile:
+    __tablename__ = "workbench_user_profile"
 
-    id = Column(Integer, primary_key=True, autoincrement="auto")
+    id = mapped_column(Integer, primary_key=True, autoincrement="auto")
     name = Column(String(100), nullable=False)
     description = Column(String(255), nullable=True)
 
-    user: Mapped[List["User"]] = relationship(back_populates="type")
+    user: Mapped[List["User"]] = relationship(
+        "User",
+        back_populates="user_profile"
+    )
 
 
 class User(Base):
     __tablename__ = "workbench_user"
 
-    id = Column(Integer, primary_key=True, autoincrement="auto")
+    id = mapped_column(Integer, primary_key=True, autoincrement="auto")
     hash_identifier = Column(String(255), unique=True, nullable=False)
-    type_id = Column(Integer, ForeignKey(UserType.id), nullable=False)
 
-    type: Mapped["UserType"] = relationship(back_populates="user")
+    user_profile_id = Column(
+        ForeignKey("workbench_user_profile.id"),
+        nullable=False
+    )
+    user_profile: Mapped["UserProfile"] = relationship(
+        back_populates="user"
+    )
+
     task_association: Mapped[List["AssociationTaskUser"]] = relationship(
         lazy='joined',
         back_populates="user"
@@ -112,7 +123,7 @@ class Role(Base):
         ),
     )
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    user_group_id = Column(Integer, ForeignKey("user_groups.id"))
+    user_group_id = Column(Integer, ForeignKey("workbench_user_groups.id"))
     name = Column(String(100))
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())

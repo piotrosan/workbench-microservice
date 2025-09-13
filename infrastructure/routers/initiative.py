@@ -43,7 +43,7 @@ async def create_initiative(
     return KnowledgeResponse()
 
 
-@router.post("/", response_model=KnowledgeResponse)
+@router.post("/type", response_model=KnowledgeResponse)
 async def create_initiative_type(
         create_initiative_type_request: Annotated[
             List[CreateInitiativeTypeRequest], Body(...)],
@@ -55,6 +55,16 @@ async def create_initiative_type(
 
 
 @router.patch("/", response_model=KnowledgeResponse)
+async def update_initiative(
+        update_initiative_type_request: Annotated[
+            CreateInitiativeRequest, Body(...)],
+        request: Request
+):
+
+    return KnowledgeResponse()
+
+
+@router.patch("/type", response_model=KnowledgeResponse)
 async def update_initiative(
         initiative_data: Annotated[CreateKnowledgeRequest, Body(...)],
         request: Request

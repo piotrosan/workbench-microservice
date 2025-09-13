@@ -20,17 +20,20 @@ from infrastructure.database.sql.models.base import Base
 class AssociationInitiativeUser(Base):
     __tablename__ = "association_table_user_initiative"
 
-    task_id: Mapped[int] = mapped_column(
-        ForeignKey("Task.id"),
+    initiative_id: Mapped[int] = mapped_column(
+        ForeignKey("initiative.id"),
         primary_key=True
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("User.id"),
+        ForeignKey("workbench_user.id"),
         primary_key=True
     )
     initiative: Mapped["Initiative"] = relationship(
-        back_populates="user_association")
-    user: Mapped["User"] = relationship(back_populates="task_association")
+        back_populates="user_association"
+    )
+    user: Mapped["User"] = relationship(
+        back_populates="task_association"
+    )
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
