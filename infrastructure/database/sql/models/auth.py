@@ -38,7 +38,7 @@ class AssociationUserGroupUser(Base):
     updated_at = Column(DateTime, onupdate=func.now())
 
 
-class UserProfile:
+class UserProfile(Base):
     __tablename__ = "workbench_user_profile"
 
     id = mapped_column(Integer, primary_key=True, autoincrement="auto")
@@ -56,6 +56,7 @@ class User(Base):
 
     id = mapped_column(Integer, primary_key=True, autoincrement="auto")
     hash_identifier = Column(String(255), unique=True, nullable=False)
+    account_id = Column(Integer, nullable=False)
 
     user_profile_id = Column(
         ForeignKey("workbench_user_profile.id"),

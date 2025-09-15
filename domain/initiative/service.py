@@ -1,8 +1,10 @@
 from typing import List
 
 from infrastructure.database.sql.api.initiative import InitiativeDBAPI
+from infrastructure.database.sql.models import Initiative, InitiativeType
 from infrastructure.routers.models.request.initiative import \
-    CreateInitiativeRequest, CreateInitiativeTypeRequest
+    CreateInitiativeRequest, CreateInitiativeTypeRequest, \
+    UpdateInitiativeRequest, UpdateInitiativeTypeRequest
 
 
 class InitiativeService:
@@ -25,5 +27,29 @@ class InitiativeService:
 
     def update_initiative(
             self,
-            update_initiative_request: List[CreateInitiativeRequest]
+            update_initiative_request: List[UpdateInitiativeRequest]
     ):
+
+        for initiative in update_initiative_request:
+            self.ci_db_api.update_object(
+                Initiative,
+                initiative.model_dump()
+            )
+
+
+    def update_initiative_type(
+            self,
+            update_initiative_type_request: List[UpdateInitiativeTypeRequest]
+    ):
+        for initiative_type in update_initiative_type_request:
+            self.ci_db_api.update_object(
+                InitiativeType,
+                initiative_type.model_dump()
+            )
+
+
+    def get_initiative_for_account(self, id_account: int, page: int):
+        return self.ci_db_api.query_initiatives_for_account_generator(
+            id_account,
+            page
+        )

@@ -58,13 +58,14 @@ class Initiative(Base):
     __tablename__ = "initiative"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    type_id = Column(Integer, ForeignKey(InitiativeType.id), nullable=False)
+
     title = Column(String(50), nullable=False)
     description = Column(String(255), nullable=True)
     custom_notes = Column(TEXT, nullable=True)
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
+    type_id = Column(Integer, ForeignKey(InitiativeType.id), nullable=False)
     type: Mapped["InitiativeType"] = relationship(
         back_populates='initiatives'
     )

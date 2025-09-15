@@ -1,13 +1,16 @@
 import logging
+from encodings.aliases import aliases
 from typing import Iterable, List, cast, Iterator
 
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.util import aliased
 from typing_extensions import Any
 
 from sqlalchemy import select, text
 from sqlalchemy import exc
 
 from infrastructure.database.sql.api.engine import DBEngine, DBEngineAbstract
+from infrastructure.database.sql.models import User
 from infrastructure.database.sql.models.initiative import Initiative, \
     InitiativeType
 
@@ -60,8 +63,8 @@ class CreateInitiativeDBAPI(DBEngineAbstract):
 
 class GetInitiativeDBAPI(DBEngineAbstract):
 
+    @staticmethod
     def _select_all_initiative_for_sql(
-            self,
             column: List[str] = None,
             order: List[str] = None
     ):
@@ -75,12 +78,15 @@ class GetInitiativeDBAPI(DBEngineAbstract):
 
         return tmp_select
 
-    def _select_initiative_from_ids(self, ids_initiative: List[int]):
+
+    @staticmethod
+    def _select_initiatives_for_account(id_account: int):
+        user_table = aliased(User)
         try:
             return select(Initiative).where(
                 cast(
                     "ColumnElement[bool]",
-                    Initiative.id.in_(ids_initiative)
+                    Initiative.users.any(user_table.account_id==id_account)
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -91,31 +97,14 @@ class GetInitiativeDBAPI(DBEngineAbstract):
                 status_code=400
             )
 
-    def _select_initiatives_for_account(self, ids_initiative: List[int]):
+
+    @staticmethod
+    def _select_initiative_with_all_tasks(ids_initiative: List[int]):
         try:
             return select(Initiative).where(
                 cast(
                     "ColumnElement[bool]",
                     Initiative.id.in_(ids_initiative)
-                )
-            )
-        except exc.SQLAlchemyError as e:
-            logger.critical(
-                f"Problem wile select initiative from id {e}")
-            raise InitiativeHttpException(
-                detail="Can not select initiative",
-                status_code=400
-            )
-
-    def _select_initiative_with_all_tasks(
-            self,
-            id_initiative: int
-    ):
-        try:
-            return select(Initiative).where(
-                cast(
-                    "ColumnElement[bool]",
-                    Initiative.id == id_initiative
                 )
             ).options(
                     joinedload(Initiative.tasks)
@@ -129,8 +118,7 @@ class GetInitiativeDBAPI(DBEngineAbstract):
                 status_code=400
             )
 
-
-    def query_all_initiatives_generator(
+    def query_all_initiatives_flex_generator(
             self,
             column: List[str] = None,
             order: List[str] = None,
@@ -138,7 +126,7 @@ class GetInitiativeDBAPI(DBEngineAbstract):
     ) -> Iterator[Any]:
         try:
             return self.query_statement(
-                self._select_all_initiative_sql(column, order),
+                self._select_all_initiative_for_sql(column, order),
                 Initiative,
                 page
             )
@@ -149,14 +137,14 @@ class GetInitiativeDBAPI(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_initiatives_from_ids(
+    def query_initiatives_with_task_from_ids(
             self,
             ids_initiative: List[int],
             page: int = None
     ) -> Iterator[Any]:
         try:
             return self.query_statement(
-                    self._select_initiatives_from_ids(ids_initiative),
+                    self._select_initiative_with_all_tasks(ids_initiative),
                     Initiative,
                     page
                 )
@@ -169,14 +157,15 @@ class GetInitiativeDBAPI(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_flash_cards_generator(
+    def query_initiatives_for_account_generator(
             self,
+            id_account: int,
             page_id: int
     ) -> Iterator[Any]:
         try:
             return self.query_statement(
-                    self._select_all_flash_card_sql(),
-                    FlashCard,
+                    self._select_initiatives_for_account(id_account),
+                    Initiative,
                     page_id
             )
         except exc.SQLAlchemyError as e:
@@ -189,14 +178,14 @@ class GetInitiativeDBAPI(DBEngineAbstract):
             )
 
 
-class UpdateFlashCardDBAPI(DBEngineAbstract):
+class UpdateInitiativeDBAPI(DBEngineAbstract):
     pass
 
 
 class InitiativeDBAPI(
     CreateInitiativeDBAPI,
-    GetFlashCardDBAPI,
-    UpdateFlashCardDBAPI,
+    GetInitiativeDBAPI,
+    UpdateInitiativeDBAPI,
     DBEngine
 ):
     pass
