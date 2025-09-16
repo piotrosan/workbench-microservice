@@ -13,7 +13,7 @@ from infrastructure.database.sql.api.exception.auth_exception import \
     AuthHttpException
 from infrastructure.database.sql.models import UserGroup
 from infrastructure.database.sql.models.auth import User, Role, AssociationUserGroupUser
-from infrastructure.database.sql.api.exception.test_knowledge_exception import TestKnowledgeHttpException
+from infrastructure.database.sql.api.exception.task_exception import TaskHttpException
 from infrastructure.routers.models.request.permission import UserGroupAndRole
 
 logger = logging.getLogger("root")
@@ -54,7 +54,7 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
             logger.critical(
                 f"Problem wile insert user permission -> {e}"
             )
-            raise TestKnowledgeHttpException(
+            raise AuthHttpException(
                 detail="Can not insert user permission",
                 status_code=400
             )
@@ -88,7 +88,7 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
                     g.model_dump(mode='python') for g in groups_and_role
                 ]}"
             )
-            raise TestKnowledgeHttpException(
+            raise AuthHttpException(
                 detail="Can not insert user group with role",
                 status_code=400
             )
@@ -106,7 +106,7 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
             logger.critical(
                 f"Problem wile insert user -> {e}"
             )
-            raise TestKnowledgeHttpException(
+            raise AuthHttpException(
                 detail="Can not insert user group with role",
                 status_code=400
             )
@@ -133,7 +133,7 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
                     g.model_dump(mode='python') for g in groups_and_roles
                 ]}"
             )
-            raise TestKnowledgeHttpException(
+            raise AuthHttpException(
                 detail="Can not add user to group",
                 status_code=400
             )
@@ -141,14 +141,15 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
             logger.critical(
                 f"Problem wile add user to group, groups is empty -> {e}"
             )
-            raise TestKnowledgeHttpException(
+            raise TaskHttpException(
                 detail="Can not add user to group",
                 status_code=400
             )
 
 class GetUserPermissionDBAPIMixin(DBEngineAbstract):
-    def _select_all_test_knowledge_sql(
-            self,
+
+    @staticmethod
+    def _select_users_flex_sql(
             column: List[str] = None,
             order: List[str] = None
     ):
@@ -162,8 +163,8 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
 
         return tmp_select
 
-    def _select_user_with_permisison_sql(
-            self,
+    @staticmethod
+    def _select_user_with_permission_sql(
             hash_identifier: str
     ):
         return (
@@ -195,14 +196,14 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
             .options(joinedload(User.user_groups).joinedload(UserGroup.roles))
         )
 
-    def query_user_with_permission_paginate_generator(
+    def query_user_with_permission(
             self,
             hash_identifier: str,
             page: int = None
-    ) -> Iterator[Any]:
+    ) -> Result[Any]:
         try:
             return self.query_statement(
-                self._select_user_with_permisison_sql(hash_identifier),
+                self._select_user_with_permission_sql(hash_identifier),
                 page=page
             )
         except exc.SQLAlchemyError as e:
@@ -215,8 +216,8 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
             )
 
 
+    @staticmethod
     def _select_user_groups_for_names_sql(
-            self,
             groups: List[str]
     ):
         sql = (
@@ -230,12 +231,12 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
             self,
             groups: list[str],
             page=None
-    ) -> List[UserGroup]:
+    ) -> Result[Any]:
         try:
-            return list(self.query_statement(
-                self._select_user_groups_for_names_sql(group),
+            return self.query_statement(
+                self._select_user_groups_for_names_sql(groups),
                 page=page
-            ))
+            )
         except exc.SQLAlchemyError as e:
             logger.critical(
                 "Problem wile select query"
@@ -245,9 +246,8 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-
+    @staticmethod
     def _select_user_for_hash_sql(
-            self,
             hash_identifier: str
     ):
         return (
@@ -260,13 +260,16 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
             )
         )
 
-    def query_user_from_hash(self, hash_identifier: str, page=None) -> Any:
+    def query_user_from_hash(
+            self,
+            hash_identifier: str,
+            page=None
+    ) -> Result[Any]:
         try:
-            users: Tuple[User] = next(self.query_statement(
+            return self.query_statement(
                 self._select_user_for_hash_sql(hash_identifier),
                 page=page
-            ))
-            return users[0]
+            )
         except exc.SQLAlchemyError as e:
             logger.critical(
                 "Problem wile select query"

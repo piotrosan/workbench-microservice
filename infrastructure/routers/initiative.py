@@ -7,7 +7,7 @@ from infrastructure.database.sql.models.initiative import Initiative
 from infrastructure.routers.models.request.generic import GenericResponse
 from infrastructure.routers.models.request.initiative import \
     CreateInitiativeRequest, CreateInitiativeTypeRequest
-from infrastructure.routers.models.request.knowledge import CreateKnowledgeRequest
+from infrastructure.routers.models.request.task import CreateKnowledgeRequest
 from infrastructure.routers.models.response.knowledge import KnowledgeResponse
 from infrastructure.security.permission.account_admin import check_account_admin
 from infrastructure.security.permission.app_admin import check_admin

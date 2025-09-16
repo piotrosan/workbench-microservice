@@ -39,7 +39,7 @@ class Task(Base):
 
     title = Column(String(255), nullable=False)
     description = Column(TEXT, nullable=True)
-    priority = Column(DateTime, nullable=True)
+    priority = Column(Integer, nullable=True)
     start_at = Column(DateTime, nullable=True)
     end_at = Column(DateTime, nullable=True)
 

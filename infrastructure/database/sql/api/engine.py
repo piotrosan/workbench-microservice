@@ -1,6 +1,8 @@
 import abc
 import logging
 from importlib import reload
+
+from sqlalchemy.engine.result import Result
 from typing_extensions import Any
 from typing import Sequence, Iterable, Generator, Iterator, List, Dict
 from sqlalchemy import exc
@@ -29,7 +31,7 @@ class DBEngineAbstract(abc.ABC):
             select_query: Select[Any],
             model: type[Base] = None,
             page: int = None
-    ) -> Iterator[Any]:
+    ) -> Result[Any]:
         raise NotImplemented()
 
     def insert_objects(
@@ -62,14 +64,14 @@ class DBEngine(DBEngineAbstract):
             select_query: Select[Any],
             model: Base = None,
             page: int = None
-    ) -> Iterator[Any]:
+    ) -> Result[Any]:
         if page:
             pagination = Pagination(select_query, model)
             select_query = pagination.get_page(page)
 
         with session as s:
-            for row in s.execute(select_query).unique():
-                yield row
+            return s.execute(select_query).unique()
+
 
     def insert_objects(
             self,

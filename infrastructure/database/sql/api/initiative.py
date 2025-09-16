@@ -2,6 +2,7 @@ import logging
 from encodings.aliases import aliases
 from typing import Iterable, List, cast, Iterator
 
+from sqlalchemy.engine.result import Result
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.util import aliased
 from typing_extensions import Any
@@ -46,7 +47,7 @@ class CreateInitiativeDBAPI(DBEngineAbstract):
     def insert_initiative_type(
             self,
             create_initiative_type_request: List[CreateInitiativeTypeRequest],
-    ) -> Iterable[CreateInitiativeTypeRequest]:
+    ) -> Iterable[InitiativeType]:
         try:
 
             return self.insert_objects([
@@ -141,7 +142,7 @@ class GetInitiativeDBAPI(DBEngineAbstract):
             self,
             ids_initiative: List[int],
             page: int = None
-    ) -> Iterator[Any]:
+    ) -> Result[Any]:
         try:
             return self.query_statement(
                     self._select_initiative_with_all_tasks(ids_initiative),
@@ -161,7 +162,7 @@ class GetInitiativeDBAPI(DBEngineAbstract):
             self,
             id_account: int,
             page_id: int
-    ) -> Iterator[Any]:
+    ) -> Result[Any]:
         try:
             return self.query_statement(
                     self._select_initiatives_for_account(id_account),
