@@ -6,7 +6,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from infrastructure.security.middleware.auth import TokenAuthBackend
-from infrastructure.routers import initiative, task
+from infrastructure.routers import initiative, task, user_permission
 from settings import DOMAIN, PORT
 from infrastructure.webhooks.register import AppRegister
 
@@ -42,6 +42,7 @@ app = FastAPI(
 # include
 app.include_router(initiative.router)
 app.include_router(task.router)
+app.include_router(user_permission.router)
 
 
 

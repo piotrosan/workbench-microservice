@@ -5,7 +5,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     Integer,
-    String, ARRAY, ForeignKey
+    String, ARRAY, ForeignKey, Boolean
 )
 
 from sqlalchemy.dialects.postgresql import TEXT
@@ -26,6 +26,7 @@ class AssociationTaskUser(Base):
         ForeignKey("workbench_user.id"),
         primary_key=True
     )
+    notification = Column(Boolean, default=False)
     task: Mapped["Task"] = relationship(back_populates="user_association")
     user: Mapped["User"] = relationship(back_populates="task_association")
     create_at = Column(DateTime, server_default=func.now())

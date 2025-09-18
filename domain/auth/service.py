@@ -77,12 +77,10 @@ class AuthService(
     GroupRoleService,
     BaseAuthService
 ):
-    def save_user_permission(
+    def create_user_permission(
             self,
             full_permission_data: FullPermissionDataRequest
     ) -> User:
         return self.infrastructure_db.insert(
             full_permission_data.model_dump(mode='Python')
         )
-
-
